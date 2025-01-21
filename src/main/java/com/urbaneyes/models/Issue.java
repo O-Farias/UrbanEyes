@@ -1,6 +1,9 @@
 package com.urbaneyes.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,11 +13,14 @@ public class Issue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "The title cannot be null")
+    @Size(min = 5, max = 255, message = "The title must be between 5 and 255 characters")
     private String title;
 
-    @Column(length = 1000)
+    @Size(max = 1000, message = "The description cannot exceed 1000 characters")
     private String description;
 
+    @NotNull(message = "The status cannot be null")
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
 
@@ -23,11 +29,46 @@ public class Issue {
     private LocalDateTime updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "category_id") 
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    // Getters e Setters
+    // Construtor padrão
+    public Issue() {}
 
+    // Construtor com argumentos
+    public Issue(Long id, String title, String description, IssueStatus status) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Construtor completo
+    public Issue(Long id, String title, String description, IssueStatus status, Category category) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.category = category;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Métodos de callback para gerenciar createdAt e updatedAt
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Getters e Setters
     public Long getId() {
         return id;
     }
